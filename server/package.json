@@ -1,0 +1,26 @@
+{
+  "name": "xcnt-transactions-graphql-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "npx nodemon"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^1.19.1"
+  },
+  "dependencies": {
+    "apollo": "^2.14.1",
+    "apollo-server-koa": "^2.6.6",
+    "graphql": "^14.3.1",
+    "graphql-subscriptions": "^1.1.0",
+    "graphql-tools": "^4.0.5",
+    "koa": "^2.7.0",
+    "koa-router": "^7.4.0",
+    "lodash": "^4.17.15",
+    "subscriptions-transport-ws": "^0.9.16"
+  }
+}
