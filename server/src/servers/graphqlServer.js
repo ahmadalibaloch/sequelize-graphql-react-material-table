@@ -8,7 +8,7 @@ module.exports.startGraphQLServer = ({ schema, context }) => {
       schema,
       introspection: true,
       playground: true,
-      mocks: true,
+      mocks: false,
       mockEntireSchema: false,
       context,
     });

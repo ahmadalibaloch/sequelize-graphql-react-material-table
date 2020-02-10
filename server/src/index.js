@@ -1,30 +1,32 @@
+require('dotenv').config();
+
+const { Readable } = require('stream');
 const { PubSub } = require('apollo-server-koa');
 
-const { transactionsDbMock } = require('./transactionsDbMock')
-const { startGraphQLServer } = require('./graphqlServer');
-const { startHttpServer } = require('./httpServer');
+const { startGraphQLServer } = require('./servers/graphqlServer');
+const { startHttpServer } = require('./servers/httpServer');
 
-const { schema } = require('./schema');
+const { schema } = require('./models/schema');
 
-const PORT = 3001; // this should come from environment variables in a real app
+const https = require('https');
+
 
 const pubsub = new PubSub();
 
-const subscription = pubsub.subscribe('transactionUpdated', (transaction) => {
-	console.log(`transaction ${transaction.id} updated to status : ${transaction.status}`);
+const subscription = pubsub.subscribe('expenseAdded', (expense) => {
+	console.log(`transaction ${expense.id} updated to status : ${expense.approved}`);
 });
 
-transactionsDbMock.setTransactionUpdateHook(pubsub);
 startHttpServer({
 	...startGraphQLServer({
 		schema,
 		context: {
-			transactions: transactionsDbMock.transactions,
+			expenses: [],
 			pubsub,
 		},
 	},
 	),
-	port: PORT,
+	port: process.env.GRAPHQL_PORT,
 });
 
-console.log(`🚀 Transactions server is running...`);
+console.log(`🚀 Server is running...`);
