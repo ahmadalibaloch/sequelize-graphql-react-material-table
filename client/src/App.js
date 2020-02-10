@@ -13,7 +13,7 @@ import { ApolloProvider } from 'react-apollo-hooks';
 import './index.css';
 
 import { Header } from './Header';
-import { TransactionsList } from './TransactionsList';
+import { ExpensesList } from './ExpensesList'
 
 
 const httpLink = new HttpLink({
@@ -60,7 +60,7 @@ export const App = () => {
 			<div className="App">
 				<Header />
 				<Container className={containerStyle.container}>
-					<TransactionsList />
+					<ExpensesList client={client} />
 				</Container>
 			</div>
 		</ApolloProvider>

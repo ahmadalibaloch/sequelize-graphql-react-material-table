@@ -14,7 +14,7 @@ import ListSubheader from '@material-ui/core/ListSubheader';
 import { Money, CalendarToday } from '@material-ui/icons';
 
 import { useMutation } from 'react-apollo-hooks';
-import { ALLOW_TRANSACTION_MUTATION, BlOCK_TRANSACTION_MUTATION, TRANSACTIONS_FETCH_QUERY } from './api/api';
+import { EXPENSE_APPROVAL_MUTATION, EXPENSES_FETCH_QUERY } from './api/api';
 import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles({
@@ -27,33 +27,29 @@ const useStyles = makeStyles({
 
 
 
-export const Transaction = ({ transaction }) => {
+export const Expense = ({ expense }) => {
 	const classes = useStyles();
 	// update local cache on client
-	const updateCache = (cache, { data: { allowTransaction = undefined, blockTransaction = undefined } }) => {
-		const { pendingTransactions } = cache.readQuery({ query: TRANSACTIONS_FETCH_QUERY });
-		const transaction = allowTransaction ? allowTransaction : blockTransaction;
+	const updateCache = (cache, { data: { setExpenseApproval = undefined, } }) => {
+		const { expenses } = cache.readQuery({ query: EXPENSES_FETCH_QUERY });
+		const theExpense = expenses.find(e => e.id === setExpenseApproval.id);
+		theExpense.approved = setExpenseApproval.approved;
 		cache.writeQuery({
-			query: TRANSACTIONS_FETCH_QUERY,
+			query: EXPENSES_FETCH_QUERY,
 			data: {
-				pendingTransactions: pendingTransactions.filter(t => t.id !== transaction.id),
+				expenses: expenses,
 			}
 		});
 	};
-	
-	const [allowTransactionHook] = useMutation(ALLOW_TRANSACTION_MUTATION, {
-		update: updateCache,
-	});
-	const [blockTransactionHook] = useMutation(BlOCK_TRANSACTION_MUTATION, {
+
+	const [setExpenseApproval] = useMutation(EXPENSE_APPROVAL_MUTATION, {
 		update: updateCache,
 	});
 
 
-	const blockTransaction = (transactionId) => {
-		blockTransactionHook({ variables: { id: transactionId } });
-	}
-	const allowTransaction = (transactionId) => {
-		allowTransactionHook({ variables: { id: transactionId } });
+
+	const setExpenseApprovalStatus = (id, approved) => {
+		setExpenseApproval({ variables: { id, approved } });
 	}
 
 	return (
@@ -61,33 +57,39 @@ export const Transaction = ({ transaction }) => {
 			<CardActionArea>
 				<CardContent>
 					<Typography gutterBottom variant="h5" component="h2">
-						{transaction.toUser}
+						{expense.description}
 					</Typography>
 					<Typography variant="body2" color="textSecondary" component="p">
-						Sent from {transaction.fromUser}
+						Sent from {expense.employee.name}
 					</Typography>
 					<List subheader={<ListSubheader>Transaction Details</ListSubheader>} className={classes.root}>
 						<ListItem>
 							<ListItemIcon>
 								<Money></Money>
 							</ListItemIcon>
-							<ListItemText id="switch-list-label-wifi" primary={`$${transaction.amount}`} />
+							<ListItemText id="switch-list-label-wifi" primary={`$${expense.amount}`} />
 						</ListItem>
 						<ListItem>
 							<ListItemIcon>
 								<CalendarToday></CalendarToday>
 							</ListItemIcon>
-							<ListItemText id="switch-list-label-bluetooth" primary={transaction.date} />
+							<ListItemText id="switch-list-label-bluetooth" primary={expense.created_at} />
+						</ListItem>
+						<ListItem>
+							<ListItemIcon>
+								<CalendarToday></CalendarToday>
+							</ListItemIcon>
+							<ListItemText id="switch-list-label-bluetooth" primary={JSON.stringify(expense.approved)} />
 						</ListItem>
 					</List>
 				</CardContent>
 			</CardActionArea>
 			<CardActions style={{ justifyContent: 'flex-end' }}>
-				<Button size="small" color="secondary" variant="contained" onClick={() => { blockTransaction(transaction.id) }} >
-					Block
+				<Button size="small" color="secondary" variant="contained" onClick={() => { setExpenseApprovalStatus(expense.id, false) }} >
+					Refuse
 							</Button>
-				<Button size="small" color="primary" variant="contained" onClick={() => { allowTransaction(transaction.id) }}>
-					Allow
+				<Button size="small" color="primary" variant="contained" onClick={() => { setExpenseApprovalStatus(expense.id, true) }}>
+					Approve
 							</Button>
 			</CardActions>
 		</Card>
