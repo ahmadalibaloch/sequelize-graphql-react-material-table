@@ -1,9 +1,9 @@
 import gql from 'graphql-tag';
 
 export const EXPENSE_APPROVAL_MUTATION = gql`
-		mutation setExpenseApproval($id: String!, $approved: Boolean!){
-			setExpenseApproval(id: $id, approved:$approved){
-				id, approved
+		mutation setExpenseApproval($uuid: String!, $approved: Boolean!){
+			setExpenseApproval(uuid: $uuid, approved: $approved){
+				uuid, approved
 			}
 		}
 	`;
@@ -11,14 +11,16 @@ export const EXPENSE_APPROVAL_MUTATION = gql`
 export const EXPENSES_FETCH_QUERY = gql`
 	{
 		expenses {
-				id,
+				uuid,
 				amount,
 				description,
 				created_at,
 				currency,
 				approved,
 				employee {
-					  id,name
+					uuid
+					first_name
+					last_name
 				}
 		}
 	}
@@ -27,12 +29,13 @@ export const EXPENSES_FETCH_QUERY = gql`
 export const EXPENSE_ADD_SUBSCRIPTION = gql`
 subscription{
 	expenseAdded{
-	  id
+	uuid
 	  approved
 	  amount
 	  employee{
-		id
-		name
+		uuid
+		first_name
+		last_name
 	  }
 	  created_at
 	}

@@ -13,7 +13,7 @@ import { ApolloProvider } from 'react-apollo-hooks';
 import './index.css';
 
 import { Header } from './Header';
-import { ExpensesList } from './ExpensesList'
+import { ExpensesList } from './expenses/ExpensesList'
 
 
 const httpLink = new HttpLink({
