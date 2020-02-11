@@ -20,6 +20,11 @@ npm install
 npm start
 ```
 
+TO start a database instance using docker
+```
+docker run --rm   --name pg-docker -e POSTGRES_PASSWORD=123 -d -p 5432:5432 -v
+```
+
 ## Web App
 In ./client/ start the web server using
 ```bash
