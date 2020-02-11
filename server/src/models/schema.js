@@ -1,6 +1,7 @@
 const graphql = require('graphql');
 const { EXPENSE_ADDED } = require('../servers/pubsub');
 const { EmployeeModel, ExpenseModel } = require('./models');
+const { Date } = require('./graphqlDate');
 
 // Define the GraphQL schema
 const Expense = new graphql.GraphQLObjectType({
@@ -11,7 +12,7 @@ const Expense = new graphql.GraphQLObjectType({
 		uuid: { type: graphql.GraphQLString },
 		description: { type: graphql.GraphQLString },
 		amount: { type: graphql.GraphQLInt },
-		created_at: { type: graphql.GraphQLString },
+		created_at: { type: Date },
 		currency: { type: graphql.GraphQLString },
 		approved: { type: graphql.GraphQLBoolean },
 		employee: {
