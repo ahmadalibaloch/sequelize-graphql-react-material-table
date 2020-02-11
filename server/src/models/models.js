@@ -1,5 +1,6 @@
 const { sequelize } = require('../db/db');
-const { DataTypes } = require('sequelize')
+const { DataTypes } = require('sequelize');
+const { pubsub, SYNC_DB, READ_HTTP_STREAM } = require('../servers/pubsub');
 // define models (DOMAIN)
 
 const ExpenseModel = sequelize.define('expense', {
@@ -47,6 +48,17 @@ const EmployeeModel = sequelize.define('employee', {
 // relations
 EmployeeModel.hasMany(ExpenseModel, { foreignKey: 'employee_id' });
 ExpenseModel.belongsTo(EmployeeModel, { foreignKey: 'employee_id' });
+
+// sync with db
+pubsub.subscribe(SYNC_DB, async () => {
+	try {
+		await EmployeeModel.sync();
+		await ExpenseModel.sync();
+		pubsub.publish(READ_HTTP_STREAM);
+	} catch (error) {
+		console.error('Error syncing modesl with DB, Error:', error);
+	}
+});
 module.exports = {
 	ExpenseModel, EmployeeModel
 };

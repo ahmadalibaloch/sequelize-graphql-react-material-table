@@ -1,4 +1,5 @@
 const graphql = require('graphql');
+const { EXPENSE_ADDED } = require('../servers/pubsub');
 const { EmployeeModel, ExpenseModel } = require('./models');
 
 // Define the GraphQL schema
@@ -32,12 +33,19 @@ var Employee = new graphql.GraphQLObjectType({
 })
 
 // Define Graphql Roots
+const expenseAddedType = new graphql.GraphQLObjectType({
+	name: 'ExpenseAdded',
+	fields: () => ({
+		expense: { type: Expense },
+		count: { type: graphql.GraphQLInt },
+	})
+});
 const SubscriptionRoot = new graphql.GraphQLObjectType({
 	name: 'Subscription',
 	fields: () => ({
 		expenseAdded: {
-			type: Expense,
-			subscribe: (root, args, context) => context.pubsub.asyncIterator('expenseAdded'),
+			type: expenseAddedType,
+			subscribe: (root, args, context) => context.pubsub.asyncIterator(EXPENSE_ADDED),
 			resolve: expense => expense,
 		}
 	})
