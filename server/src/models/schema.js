@@ -1,6 +1,5 @@
 const graphql = require('graphql');
 const { EmployeeModel, ExpenseModel } = require('./models');
-const { Op, Sequelize } = require("sequelize");
 
 // Define the GraphQL schema
 const Expense = new graphql.GraphQLObjectType({
@@ -70,50 +69,14 @@ const MutationRoot = new graphql.GraphQLObjectType({
 		}
 	})
 })
-const PaginationType = new graphql.GraphQLObjectType({
-	name: 'Pagination',
-	fields: {
-		expenses: { type: new graphql.GraphQLList(Expense) },
-		count: { type: graphql.GraphQLInt },
-		hasNextPage: { type: graphql.GraphQLBoolean },
-	}
-});
+
 const QueryRoot = new graphql.GraphQLObjectType({
 	name: 'Query',
 	fields: () => ({
 		expenses: {
-			type: PaginationType,
-			args: {
-				page: { type: graphql.GraphQLNonNull(graphql.GraphQLInt) },
-				pageSize: { type: graphql.GraphQLNonNull(graphql.GraphQLInt) },
-				search: { type: graphql.GraphQLString }
-			},
-			resolve: async (parent, args, context, resolveInfo) => {
-				const search = args.search || '';
-				const searchSQL = "%" + search + "%";
-				const offset = args.page * args.pageSize;
-				const limit = args.pageSize;
-				const where = {
-					[Op.or]: [
-						{ '$employee.first_name$': { [Op.iLike]: searchSQL } },
-						{ '$employee.last_name$': { [Op.iLike]: searchSQL } },
-						{ currency: { [Op.iLike]: searchSQL } },
-						{ description: { [Op.iLike]: searchSQL } },
-						Sequelize.where(
-							Sequelize.cast(Sequelize.col('amount'), 'varchar'),
-							Op.iLike,
-							searchSQL
-						),
-						Sequelize.where(
-							Sequelize.cast(Sequelize.col('created_at'), 'varchar'),
-							Op.iLike,
-							searchSQL
-						),
-					],
-				};
-				const count = await ExpenseModel.count(); // bug in findAndCountAll
-				const expenses = await ExpenseModel.findAll({ limit, include: [EmployeeModel], where });
-				return { expenses: expenses.splice(0, offset), count, hasNextPage: count > offset };
+			type: new graphql.GraphQLList(Expense),
+			resolve: (parent, args, context, resolveInfo) => {
+				return ExpenseModel.findAll({ include: [EmployeeModel] });
 			}
 		},
 		expense: {
