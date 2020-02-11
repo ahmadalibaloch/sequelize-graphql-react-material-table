@@ -8,7 +8,7 @@ module.exports.Date = new GraphQLScalarType({
 		return new Date(value); // value from the client
 	},
 	serialize(value) {
-		return value.toLocaleDateString(); // value sent to the client
+		return typeof value == 'object' ? value.toLocaleDateString() : ''; // value sent to the client
 	},
 	parseLiteral(ast) {
 		if (ast.kind === Kind.INT) {
