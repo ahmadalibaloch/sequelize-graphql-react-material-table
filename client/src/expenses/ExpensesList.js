@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import MaterialTable from 'material-table';
 import { tableIcons } from './tableIcons';
 
@@ -7,19 +7,17 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { useMutation } from 'react-apollo-hooks';
 import { EXPENSE_APPROVAL_MUTATION, EXPENSES_FETCH_QUERY, EXPENSE_ADD_SUBSCRIPTION } from '../api/api';
 import { useSubscription, useQuery } from 'react-apollo-hooks';
-import { } from '../api/api';
 
 
 export const ExpensesList = ({ }) => {
 	const { data = [], error, loadingTransactions
 	} = useQuery(EXPENSES_FETCH_QUERY);
-
+	const [newRecords, setNewRecords] = useState(0);
 	// use of graphql subscription
 	useSubscription(
 		EXPENSE_ADD_SUBSCRIPTION, {
 		onSubscriptionData: ({ client, subscriptionData: { data: { expenseAdded } } }) => {
-			console.log('subcription data', expenseAdded);
-			// we can update the list here too, or cache
+			setNewRecords(expenseAdded.count);
 		}
 	});
 	// update local cache on client after mutating approval status
@@ -54,7 +52,7 @@ export const ExpensesList = ({ }) => {
 					{ title: 'First Name', field: 'employee.first_name' },
 					{ title: 'Last Name', field: 'employee.last_name' },
 					{ title: 'Expense', field: 'amount' },
-					{ title: 'Created', field: 'created_at', type: 'date' },
+					{ title: 'Created', field: 'created_at', type: 'date', },
 					{
 						title: 'Currency',
 						field: 'currency',
@@ -74,6 +72,7 @@ export const ExpensesList = ({ }) => {
 					sorting: true
 				}}
 			/>
+			<div>New Records: {newRecords}</div>
 		</div>
 	);
 };

@@ -27,17 +27,20 @@ export const EXPENSES_FETCH_QUERY = gql`
 `;
 
 export const EXPENSE_ADD_SUBSCRIPTION = gql`
-subscription{
-	expenseAdded{
-	uuid
-	  approved
-	  amount
-	  employee{
-		uuid
-		first_name
-		last_name
-	  }
-	  created_at
+	subscription {
+			expenseAdded {
+				expense {
+					uuid
+					approved
+					amount
+					created_at
+					employee{
+						uuid
+						first_name
+						last_name
+					}
+				}
+				count				
+		}
 	}
-  }
   `;
