@@ -15,20 +15,20 @@ const { pubsub } = require('./servers/pubsub');
 pubsub.subscribe('expenseAdded', (expense) => {
 	console.log(`transaction ${expense.uuid} updated to status : ${expense.approved}`);
 });
-// pubsub.subscribe('startReadingExpenseStream', () => {
-// 	request({ url: 'https://cashcog.xcnt.io/stream' })
-// 		.pipe(JSONStream.parse())
-// 		.pipe(es.mapSync(async function (expense) {
-// 			expense.approved = false;
-// 			try {
-// 				await EmployeeModel.create(expense.employee);
-// 				const saveExpense = await ExpenseModel.create(expense);
-// 				saveExpense.setEmployee(expense.employee.uuid);
-// 			} catch (ex) {
-// 				console.error('Error', ex.message);
-// 			}
-// 		}));
-// });
+pubsub.subscribe('startReadingExpenseStream', () => {
+	request({ url: 'https://cashcog.xcnt.io/stream' })
+		.pipe(JSONStream.parse())
+		.pipe(es.mapSync(async function (expense) {
+			expense.approved = false;
+			try {
+				await EmployeeModel.create(expense.employee);
+				const saveExpense = await ExpenseModel.create(expense);
+				saveExpense.setEmployee(expense.employee.uuid);
+			} catch (ex) {
+				console.error('Error', ex.message);
+			}
+		}));
+});
 
 startHttpServer({
 	...startGraphQLServer({
