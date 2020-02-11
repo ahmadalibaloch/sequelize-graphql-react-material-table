@@ -4,7 +4,7 @@ const { DataTypes } = require('sequelize')
 
 const ExpenseModel = sequelize.define('expense', {
 	// Model attributes are defined here
-	id: {
+	uuid: {
 		type: DataTypes.STRING,
 		allowNull: false,
 		primaryKey: true,
@@ -29,12 +29,15 @@ const ExpenseModel = sequelize.define('expense', {
 
 const EmployeeModel = sequelize.define('employee', {
 	// Model attributes are defined here
-	id: {
+	uuid: {
 		type: DataTypes.STRING,
 		allowNull: false,
 		primaryKey: true,
 	},
-	name: {
+	first_name: {
+		type: DataTypes.STRING
+	},
+	last_name: {
 		type: DataTypes.STRING
 	},
 }, {

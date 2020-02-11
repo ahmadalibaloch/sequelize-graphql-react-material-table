@@ -1,5 +1,6 @@
 const graphql = require('graphql');
 const { EmployeeModel, ExpenseModel } = require('./models');
+const { Op, Sequelize } = require("sequelize");
 
 // Define the GraphQL schema
 const Expense = new graphql.GraphQLObjectType({
@@ -7,7 +8,7 @@ const Expense = new graphql.GraphQLObjectType({
 	sqlTable: 'expenses',
 	uniqueKey: 'id',
 	fields: () => ({
-		id: { type: graphql.GraphQLString },
+		uuid: { type: graphql.GraphQLString },
 		description: { type: graphql.GraphQLString },
 		amount: { type: graphql.GraphQLInt },
 		created_at: { type: graphql.GraphQLString },
@@ -22,8 +23,9 @@ const Expense = new graphql.GraphQLObjectType({
 var Employee = new graphql.GraphQLObjectType({
 	name: 'Employee',
 	fields: () => ({
-		id: { type: graphql.GraphQLString },
-		name: { type: graphql.GraphQLString },
+		uuid: { type: graphql.GraphQLString },
+		first_name: { type: graphql.GraphQLString },
+		last_name: { type: graphql.GraphQLString },
 		expenses: {
 			type: graphql.GraphQLList(Expense),
 		}
@@ -49,16 +51,16 @@ const MutationRoot = new graphql.GraphQLObjectType({
 			type: Expense,
 			args: {
 				approved: { type: graphql.GraphQLNonNull(graphql.GraphQLBoolean) },
-				id: { type: graphql.GraphQLNonNull(graphql.GraphQLString) },
+				uuid: { type: graphql.GraphQLNonNull(graphql.GraphQLString) },
 			},
 			resolve: async (parent, args, context, resolveInfo) => {
 				try {
-					const result = (await ExpenseModel.update({ approved: args.approved }, { where: { id: args.id } }));
+					const result = (await ExpenseModel.update({ approved: args.approved }, { where: { uuid: args.uuid } }));
 					console.log('result', JSON.stringify(result));
 					if (result[0] != 1) {
 						throw "Error updating expense";
 					}
-					const expense = (await ExpenseModel.findAll({ where: { id: args.id }, include: [EmployeeModel] }))[0];
+					const expense = (await ExpenseModel.findAll({ where: { uuid: args.uuid }, include: [EmployeeModel] }))[0];
 					context.pubsub.publish('expenseAdded', expense);
 					return expense;
 				} catch (err) {
@@ -68,21 +70,57 @@ const MutationRoot = new graphql.GraphQLObjectType({
 		}
 	})
 })
-
+const PaginationType = new graphql.GraphQLObjectType({
+	name: 'Pagination',
+	fields: {
+		expenses: { type: new graphql.GraphQLList(Expense) },
+		count: { type: graphql.GraphQLInt },
+		hasNextPage: { type: graphql.GraphQLBoolean },
+	}
+});
 const QueryRoot = new graphql.GraphQLObjectType({
 	name: 'Query',
 	fields: () => ({
 		expenses: {
-			type: new graphql.GraphQLList(Expense),
-			resolve: (parent, args, context, resolveInfo) => {
-				return ExpenseModel.findAll({ include: [EmployeeModel] });
+			type: PaginationType,
+			args: {
+				page: { type: graphql.GraphQLNonNull(graphql.GraphQLInt) },
+				pageSize: { type: graphql.GraphQLNonNull(graphql.GraphQLInt) },
+				search: { type: graphql.GraphQLString }
+			},
+			resolve: async (parent, args, context, resolveInfo) => {
+				const search = args.search || '';
+				const searchSQL = "%" + search + "%";
+				const offset = args.page * args.pageSize;
+				const limit = args.pageSize;
+				const where = {
+					[Op.or]: [
+						{ '$employee.first_name$': { [Op.iLike]: searchSQL } },
+						{ '$employee.last_name$': { [Op.iLike]: searchSQL } },
+						{ currency: { [Op.iLike]: searchSQL } },
+						{ description: { [Op.iLike]: searchSQL } },
+						Sequelize.where(
+							Sequelize.cast(Sequelize.col('amount'), 'varchar'),
+							Op.iLike,
+							searchSQL
+						),
+						Sequelize.where(
+							Sequelize.cast(Sequelize.col('created_at'), 'varchar'),
+							Op.iLike,
+							searchSQL
+						),
+					],
+				};
+				const count = await ExpenseModel.count(); // bug in findAndCountAll
+				const expenses = await ExpenseModel.findAll({ limit, include: [EmployeeModel], where });
+				return { expenses: expenses.splice(0, offset), count, hasNextPage: count > offset };
 			}
 		},
 		expense: {
 			type: Expense,
-			args: { id: { type: graphql.GraphQLNonNull(graphql.GraphQLString) } },
+			args: { uuid: { type: graphql.GraphQLNonNull(graphql.GraphQLString) } },
 			resolve: (parent, args, context, resolveInfo) => {
-				return ExpenseModel.findByPk(args.id, { include: [EmployeeModel] });
+				return ExpenseModel.findByPk(args.uuid, { include: [EmployeeModel] });
 			}
 		},
 		employees: {
@@ -93,9 +131,9 @@ const QueryRoot = new graphql.GraphQLObjectType({
 		},
 		employee: {
 			type: Employee,
-			args: { id: { type: graphql.GraphQLNonNull(graphql.GraphQLString) } },
+			args: { uuid: { type: graphql.GraphQLNonNull(graphql.GraphQLString) } },
 			resolve: (parent, args, context, resolveInfo) => {
-				return EmployeeModel.findByPk(args.id, { include: [ExpenseModel] });
+				return EmployeeModel.findByPk(args.uuid, { include: [ExpenseModel] });
 			}
 		},
 	})

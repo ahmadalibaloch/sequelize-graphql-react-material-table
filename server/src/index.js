@@ -1,21 +1,34 @@
 require('dotenv').config();
 
-const { Readable } = require('stream');
-const { PubSub } = require('apollo-server-koa');
 
 const { startGraphQLServer } = require('./servers/graphqlServer');
 const { startHttpServer } = require('./servers/httpServer');
 
 const { schema } = require('./models/schema');
+const { ExpenseModel, EmployeeModel } = require('./models/models');
 
-const https = require('https');
+const request = require('request');
+const JSONStream = require('JSONStream');
+const es = require('event-stream');
+const { pubsub } = require('./servers/pubsub');
 
-
-const pubsub = new PubSub();
-
-const subscription = pubsub.subscribe('expenseAdded', (expense) => {
-	console.log(`transaction ${expense.id} updated to status : ${expense.approved}`);
+pubsub.subscribe('expenseAdded', (expense) => {
+	console.log(`transaction ${expense.uuid} updated to status : ${expense.approved}`);
 });
+// pubsub.subscribe('startReadingExpenseStream', () => {
+// 	request({ url: 'https://cashcog.xcnt.io/stream' })
+// 		.pipe(JSONStream.parse())
+// 		.pipe(es.mapSync(async function (expense) {
+// 			expense.approved = false;
+// 			try {
+// 				await EmployeeModel.create(expense.employee);
+// 				const saveExpense = await ExpenseModel.create(expense);
+// 				saveExpense.setEmployee(expense.employee.uuid);
+// 			} catch (ex) {
+// 				console.error('Error', ex.message);
+// 			}
+// 		}));
+// });
 
 startHttpServer({
 	...startGraphQLServer({
