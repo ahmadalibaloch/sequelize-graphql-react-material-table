@@ -1,4 +1,4 @@
-# Coding Test (XCNT)
+# GraphQL - Sequelize - Apollo - React - Hooks - Material Design - Scss
 
 Even in the world of startups and company builders expenses for trips etc. have to be filed and managed.
 The fictitious expense software Cashcog tries to manage this. Unfortunately, there is some functionality missing which you have to create.
