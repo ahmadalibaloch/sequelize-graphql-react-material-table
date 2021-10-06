@@ -24,7 +24,7 @@
     "join-monster": "^2.1.1",
     "koa": "^2.7.0",
     "koa-router": "^7.4.0",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "request": "^2.88.0",
     "sequelize": "^6.6.5",
     "sqlite3": "^5.0.2",
