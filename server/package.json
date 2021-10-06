@@ -25,9 +25,9 @@
     "koa": "^2.7.0",
     "koa-router": "^7.4.0",
     "lodash": "^4.17.19",
-    "pg": "^7.18.1",
     "request": "^2.88.0",
-    "sequelize": "^5.21.4",
+    "sequelize": "^6.6.5",
+    "sqlite3": "^5.0.2",
     "subscriptions-transport-ws": "^0.9.16"
   }
 }
