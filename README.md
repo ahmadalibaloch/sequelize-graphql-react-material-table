@@ -4,6 +4,8 @@ Even in the world of startups and company builders expenses for trips etc. have 
 The fictitious expense software Cashcog tries to manage this. Unfortunately, there is some functionality missing which you have to create.
 The Cashcog-API only offers events about newly created expenses. The approval process however is missing and has to be added externally.
 
+![Demo](https://github.com/ahmadalibaloch/sequelize-graphql-react-material-table/blob/master/demo.png)
+
 ### Part 1 – BE-Part
 Consume the expense events provided by the Cashcog Expense-API. Validate and store them in a database of your choice.
 Create a Graph-QL or RESTful-API which allows clients to fetch, update (approve or decline), and query these expenses.
